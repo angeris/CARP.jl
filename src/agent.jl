@@ -66,5 +66,8 @@ function find_projection!(a::AgentModel)
     end
 
     optimize!(model)
+
+    a.solved = true
+
     return a.projected_point = value.(x)
 end
