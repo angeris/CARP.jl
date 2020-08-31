@@ -34,7 +34,7 @@ set_ellipsoid!(a::AgentModel, name, position::RealVector, uncertainty::RealMatri
 # Points
 function set_goal_point!(a::AgentModel, position::FloatVector)
     a.solved = false
-    a.projected_point = position
+    a.goal_point = position
 end
 function set_current_point!(a::AgentModel, position::FloatVector)
     a.solved = false
@@ -48,7 +48,7 @@ function find_projection!(a::AgentModel)
     end
 
     n = size(a.current_point, 1)
-    model = Model(ECOS.optimizer)
+    model = Model(ECOS.Optimizer)
 
     @variable(model, x[1:n])
 
