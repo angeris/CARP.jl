@@ -1,4 +1,4 @@
-struct AgentModel
+mutable struct AgentModel
     object_position::Dict{Any, FloatVector}
     object_uncertainty::Dict{Any, Eigen}
     goal_point::FloatVector
