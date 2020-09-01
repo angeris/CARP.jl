@@ -61,8 +61,8 @@ function find_projection!(a::AgentModel)
 
         λ = @variable(model, lower_bound=0.0)
         t = quad_over_lin(model, U'*(x + λ * position), 1 ./ D .+ λ)
-        @constraint(model, sum(a.current_point.^2) - 2*a.current_point' * x + sum(t)
-            <= λ * (position' * (D .* position)) - 1)
+        @constraint(model, sum(a.current_point.^2) - 2*(a.current_point' * x) + sum(t)
+            <= (position' * (D .* position)) * λ - 1)
     end
 
     optimize!(model)
