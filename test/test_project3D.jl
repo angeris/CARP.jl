@@ -14,6 +14,7 @@ a = AgentModel()
 set_current_point!(a, position)
 set_goal_point!(a, goal)
 set_ellipsoid!(a, "test", ob_center, ob_shape)
-print(a)
+# calculate projection
 proj = find_projection!(a)
-print(proj)
+# test values
+@test isapprox(projection, proj)
