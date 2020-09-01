@@ -1,9 +1,10 @@
 name = "CARP"
 uuid = "674d773b-492d-4559-a566-42fa500144bf"
-authors = ["Guillermo Angeris <guillean@stanford.edu", 
-           "Kunal Shah <kshah.kunal@gmail.com>"]
+authors = ["Guillermo Angeris <guillean@stanford.edu", "Kunal Shah <kshah.kunal@gmail.com>"]
 version = "0.1.0"
+
 [deps]
 ECOS = "e2685f51-7e38-5353-a97d-a921fd2c8199"
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
