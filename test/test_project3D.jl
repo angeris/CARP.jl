@@ -17,4 +17,4 @@ set_ellipsoid!(a, "test", ob_center, ob_shape)
 # calculate projection
 proj = find_projection!(a)
 # test values
-@test isapprox(projection, proj)
+@test all(isapprox.(projection, proj, rtol=1e-3))

@@ -52,16 +52,16 @@ function find_projection!(a::AgentModel)
     model = Model(ECOS.Optimizer)
 
     @variable(model, x[1:n])
+    @variable(model, dist)
 
-    objective = quad_over_lin(model, x - a.goal_point, ones(n)) # equivalent to (x-goal_point)^2, componentwise
-
-    @objective(model, Min, sum(objective))
+    @objective(model, Min, dist)
+    @constraint(model, [dist; x - a.goal_point] ∈ SecondOrderCone())
 
     for (name, position) in a.object_position
         D, U = a.object_uncertainty[name]
 
         λ = @variable(model, lower_bound=0.0)
-        t = quad_over_lin(model, U'*(x + λ * position), 1 ./ D .+ λ)
+        t = quad_over_lin(model, U'*(x + λ * position), λ ./ D .+ 1)
         @constraint(model, sum(a.current_point.^2) - 2*(a.current_point' * x) + sum(t)
         <= (position' * (U * (D .* (U' * position)))) * λ - λ)
         
