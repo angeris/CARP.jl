@@ -1,11 +1,15 @@
-position = [0, 0]
-goal = [10, 0]
-
-obj_center = [5, 0]
-obj_uncertainty = I(2)
+position = [ 5., -9.]
+goal = [-5, 17]
+obj_center = [-4.17742707, 0.34695836]
+projection = [7.41002297, 1.30955746]
+obj_uncertainty = [[1, 1] [1, 4]]
+dist = 10.588
 
 a = AgentModel(dims=2)
 set_current_point!(a, position)
 set_goal_point!(a, goal)
 set_ellipsoid!(a, "test", obj_center, obj_uncertainty)
-@show find_projection!(a)
+# calculate projection
+proj = find_projection!(a)
+# test values
+@test all(isapprox.(projection, a.projected_point, rtol=1e-3))
