@@ -2,13 +2,20 @@ mutable struct AgentModel
     object_position::Dict{Any, FloatVector}
     object_uncertainty::Dict{Any, Eigen}
     goal_point::FloatVector
-    current_point::FloatVector
-    projected_point::FloatVector
+    current_position::FloatVector
+    current_velocity::FloatVector
+    order::Int
+    trajectory::FloatMatrix
     solved::Bool
 end
 
 # Constructors
-AgentModel(;dims::Int=3) = AgentModel(Dict{Any, FloatVector}(), Dict{Any, FloatMatrix}(), zeros(dims), zeros(dims), zeros(dims), true)
+AgentModel(;dims::Int=3, order::Int=1) = AgentModel(Dict{Any, FloatVector}(), Dict{Any, FloatMatrix}(), #obs
+                                      zeros(dims),  # goal
+                                      zeros(dims), zeros(dims), # state
+                                      order, #Poly order (1 is a line)
+                                      zeros((dims, order)), # outputs
+                                      true)
 
 # Ellipsoid functions (we can add other types, too)
 function set_ellipsoid_uncertainty!(a::AgentModel, name, uncertainty::FloatMatrix)
@@ -37,40 +44,59 @@ function set_goal_point!(a::AgentModel, position::RealVector)
     a.goal_point .= float.(position)
 end
 
-function set_current_point!(a::AgentModel, position::RealVector)
+function set_current_position!(a::AgentModel, position::RealVector)
     a.solved = false
-    a.current_point .= float.(position)
+    a.current_position .= float.(position)
+end
+
+function set_current_velocity(a::AgentModel, velocity::RealVector)
+    a.solved = false
+    a.current_velocity .= float.(velocity)
+    #function body
 end
 
 # Solving
 function find_projection!(a::AgentModel)
     if a.solved
-        return a.projected_point
+        return a.trajectory
     end
 
-    n = size(a.current_point, 1)
+    n = size(a.current_position, 1)
+    order = a.order
     model = Model(ECOS.Optimizer)
 
-    @variable(model, x[1:n])
+    @variable(model, x[1:n, 1:order])
     @variable(model, dist)
 
     @objective(model, Min, dist)
-    @constraint(model, [dist; x - a.goal_point] ∈ SecondOrderCone())
+    # what does this constraint do?
+    @constraint(model, [dist; x[:,end] - a.goal_point] ∈ SecondOrderCone())
 
     for (name, position) in a.object_position
         D, U = a.object_uncertainty[name]
-
-        λ = @variable(model, lower_bound=0.0)
-        t = quad_over_lin(model, U'*(x + λ * position), λ ./ D .+ 1)
-        @constraint(model, sum(a.current_point.^2) - 2*(a.current_point' * x) + sum(t)
-        <= (position' * (U * (D .* (U' * position)))) * λ - λ)
-        
+        for i in 1:order
+            # put each control point in the constraint 
+            λ = @variable(model, lower_bound=0.0)
+            t = quad_over_lin(model, U'*(x[:,i] + λ * position), λ ./ D .+ 1)
+            @constraint(model, sum(a.current_position.^2) - 2*(a.current_position' * x[:,i]) + sum(t)
+            <= (position' * (U * (D .* (U' * position)))) * λ - λ)
+        end        
+    end
+    # dynamics
+    if order > 1
+        print(x)
+        @constraint(model, 3*(x[:, 1] - a.current_position) == a.current_velocity)  # ic vel
+        @constraint(model, 3*(x[:, end] - x[:, end-1]) == 0)  # final vel
+    end
+    optimize!(model)
+    # return solution
+    if termination_status(model) ==  MOI.OPTIMAL
+        a.solved = true
+        a.trajectory = value.(x)
+    else
+        a.solved=false
+        a.trajectory = Array{Float64}(undef, n, order)
     end
 
-    optimize!(model)
-
-    a.solved = true
-    a.projected_point = value.(x)
-
-    return a.projected_point
+    return a.trajectory 
 end
