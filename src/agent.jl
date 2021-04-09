@@ -64,12 +64,12 @@ function find_projection!(a::AgentModel)
     n = size(a.current_position, 1)
     order = a.order
     model = Model(ECOS.Optimizer)
-
+    
     @variable(model, x[1:n, 1:order])
     @variable(model, dist)
 
     @objective(model, Min, dist)
-    # what does this constraint do?
+    # set cone constraint
     @constraint(model, [dist; x[:,end] - a.goal_point] ∈ SecondOrderCone())
 
     for (name, position) in a.object_position
