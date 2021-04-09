@@ -6,10 +6,10 @@ obj_uncertainty = [[1, 1] [1, 4]]
 dist = 10.588
 
 a = AgentModel(dims=2)
-set_current_point!(a, position)
+set_current_position!(a, position)
 set_goal_point!(a, goal)
 set_ellipsoid!(a, "test", obj_center, obj_uncertainty)
 # calculate projection
-proj = find_projection!(a)
+find_projection!(a)
 # test values
-@test all(isapprox.(projection, a.projected_point, rtol=1e-3))
+@test isapprox(projection, a.trajectory[:,end], rtol=1e-3)
