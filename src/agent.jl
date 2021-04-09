@@ -49,7 +49,7 @@ function set_current_position!(a::AgentModel, position::RealVector)
     a.current_position .= float.(position)
 end
 
-function set_current_velocity(a::AgentModel, velocity::RealVector)
+function set_current_velocity!(a::AgentModel, velocity::RealVector)
     a.solved = false
     a.current_velocity .= float.(velocity)
     #function body
@@ -84,9 +84,8 @@ function find_projection!(a::AgentModel)
     end
     # dynamics
     if order > 1
-        print(x)
-        @constraint(model, 3*(x[:, 1] - a.current_position) == a.current_velocity)  # ic vel
-        @constraint(model, 3*(x[:, end] - x[:, end-1]) == 0)  # final vel
+        @constraint(model, 3*(x[:, 1] - a.current_position) .== a.current_velocity)  # ic vel
+        @constraint(model, x[:, end] - x[:, end-1] .== zeros(n))  # final vel
     end
     optimize!(model)
     # return solution
