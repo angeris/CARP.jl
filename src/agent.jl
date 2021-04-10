@@ -90,7 +90,7 @@ function find_projection!(a::AgentModel)
     end
     optimize!(model)
     # return solution
-    if termination_status(model) ==  MOI.OPTIMAL
+    if termination_status(model) in  [MOI.OPTIMAL, MOI.ALMOST_OPTIMAL]
         a.solved = true
         a.trajectory = value.(x)
     else
