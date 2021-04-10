@@ -64,6 +64,7 @@ function find_projection!(a::AgentModel)
     n = size(a.current_position, 1)
     order = a.order
     model = Model(ECOS.Optimizer)
+    set_optimizer_attribute(model, MOI.Silent(), true)
     
     @variable(model, x[1:n, 1:order])
     @variable(model, dist)
