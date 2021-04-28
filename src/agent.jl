@@ -92,7 +92,7 @@ function find_projection!(a::AgentModel)
     # return solution
     if termination_status(model) in  [MOI.OPTIMAL, MOI.ALMOST_OPTIMAL]
         a.solved = true
-        a.trajectory = value.(x)
+        a.trajectory = [a.current_position value.(x)]
     else
         a.solved=false
         a.trajectory = Array{Float64}(undef, n, order)
